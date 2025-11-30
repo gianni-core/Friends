@@ -38,7 +38,7 @@ const usersData = [
     {
         identifiant: 'louise.94z',
         password: 'Giannietlouise',
-        points: 0, // 174
+        points: 174,
         birthday: '03-13',
         notes: 'Ami de longue date inactive qui ne repond pas au appel est tres occupé de prend pas le temps de parler envoie pas de message ect... Compliqué',
         numberOfCrosses: 1,
