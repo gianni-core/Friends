@@ -1,0 +1,51 @@
+<!DOCTYPE html>
+<html>
+<head><link rel="stylesheet" href="css/style.css"></head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h2>Panneau Admin (Gianni)</h2>
+            <input type="text" id="newUser" placeholder="Nouvel utilisateur">
+            <input type="password" id="newPass" placeholder="Mot de passe">
+            <button onclick="createUser()">Créer Utilisateur</button>
+        </div>
+        <div id="usersList"></div>
+    </div>
+    <script src="js/app.js"></script>
+    <script>
+        async function loadUsers() {
+            const users = await req('/api/admin/users');
+            const list = document.getElementById('usersList');
+            list.innerHTML = '';
+            users.forEach(u => {
+                const div = document.createElement('div');
+                div.className = 'card';
+                let statsInputs = '';
+                ['bonte','humour','sociabilite','confiance','respect','dopamine'].forEach(s => {
+                    statsInputs += `<label style="font-size:0.8rem">${s}</label><input type="range" min="0" max="100" value="${u[s]}" onchange="updateStat(${u.id}, '${s}', this.value)" style="margin:0">`;
+                });
+                div.innerHTML = `<h3>${u.username} <button onclick="delUser(${u.id})" style="width:auto;background:#ef4444;font-size:0.7rem">Suppr</button></h3>${statsInputs}`;
+                list.appendChild(div);
+            });
+        }
+        async function createUser() {
+            await req('/api/admin/create', 'POST', {
+                username: document.getElementById('newUser').value,
+                password: document.getElementById('newPass').value
+            });
+            loadUsers();
+        }
+        async function updateStat(id, stat, val) {
+            // Recupere l'objet actuel (simplifié ici, idéalement on reload ou stocke l'état)
+            const users = await req('/api/admin/users'); 
+            const user = users.find(u => u.id === id);
+            user[stat] = val;
+            await req('/api/admin/update-stats', 'POST', user);
+        }
+        async function delUser(id) {
+            if(confirm('Sur ?')) { await req(`/api/admin/delete/${id}`, 'DELETE'); loadUsers(); }
+        }
+        loadUsers();
+    </script>
+</body>
+</html>
