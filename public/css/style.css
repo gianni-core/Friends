@@ -1,0 +1,38 @@
+:root {
+    --bg: #0f172a;
+    --card: rgba(30, 41, 59, 0.7);
+    --primary: #6366f1;
+    --accent: #10b981; /* Dopamine green */
+    --text: #f8fafc;
+}
+body {
+    background: linear-gradient(135deg, var(--bg) 0%, #1e1b4b 100%);
+    color: var(--text);
+    font-family: 'Segoe UI', sans-serif;
+    margin: 0; padding: 20px;
+    min-height: 100vh;
+    display: flex; justify-content: center; align-items: center;
+}
+.container { width: 100%; max-width: 800px; }
+.card {
+    background: var(--card);
+    backdrop-filter: blur(10px);
+    border: 1px solid rgba(255,255,255,0.1);
+    border-radius: 16px;
+    padding: 2rem;
+    box-shadow: 0 8px 32px 0 rgba(0, 0, 0, 0.37);
+    margin-bottom: 20px;
+}
+input, button {
+    width: 100%; padding: 12px; margin: 8px 0;
+    border-radius: 8px; border: none; box-sizing: border-box;
+}
+button { background: var(--primary); color: white; cursor: pointer; transition: 0.3s; font-weight: bold; }
+button:hover { transform: translateY(-2px); box-shadow: 0 4px 12px rgba(99, 102, 241, 0.4); }
+.stat-row { display: flex; align-items: center; margin-bottom: 8px; }
+.stat-label { width: 100px; font-size: 0.9rem; }
+.progress-bar { flex-grow: 1; height: 10px; background: rgba(255,255,255,0.1); border-radius: 5px; overflow: hidden; }
+.fill { height: 100%; background: linear-gradient(90deg, var(--primary), var(--accent)); width: 0%; transition: width 1s ease; }
+.hidden { display: none; }
+h2 { color: var(--accent); margin-top: 0; }
+.user-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(200px, 1fr)); gap: 15px; }
