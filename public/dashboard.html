@@ -1,0 +1,39 @@
+<!DOCTYPE html>
+<html>
+<head><link rel="stylesheet" href="css/style.css"></head>
+<body>
+    <div class="container">
+        <div class="card">
+            <h2>Mon Profil <button onclick="req('/api/logout', 'POST').then(()=>window.location='/login.html')" style="width:auto; float:right; background:#ef4444; padding:5px 10px;">X</button></h2>
+            <div id="myStats"></div>
+            <label style="display:block; margin-top:15px; cursor:pointer;">
+                <input type="checkbox" id="publicToggle" style="width:auto;"> Profil Public
+            </label>
+        </div>
+        <div class="card">
+            <h2>Amis Publics</h2>
+            <div id="friendsList" class="user-grid"></div>
+        </div>
+    </div>
+    <script src="js/app.js"></script>
+    <script>
+        (async () => {
+            const me = await req('/api/me');
+            renderStats(me, 'myStats');
+            const toggle = document.getElementById('publicToggle');
+            toggle.checked = me.is_public;
+            toggle.onchange = () => req('/api/me/visibility', 'POST', { public: toggle.checked });
+
+            const friends = await req('/api/public-users');
+            const fList = document.getElementById('friendsList');
+            friends.forEach(f => {
+                const div = document.createElement('div');
+                div.className = 'card'; div.style.margin = '0'; div.style.padding = '1rem';
+                div.id = `friend-${f.username}`;
+                fList.appendChild(div);
+                renderStats(f, `friend-${f.username}`);
+            });
+        })();
+    </script>
+</body>
+</html>
