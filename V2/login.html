@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html>
+<head><link rel="stylesheet" href="css/style.css"></head>
+<body>
+    <div class="card" style="max-width: 400px; text-align: center;">
+        <h2>Ami les Amis</h2>
+        <form id="loginForm">
+            <input type="text" id="username" placeholder="Nom d'utilisateur" required>
+            <input type="password" id="password" placeholder="Mot de passe" required>
+            <button type="submit">Connexion</button>
+        </form>
+    </div>
+    <script src="js/app.js"></script>
+    <script>
+        document.getElementById('loginForm').onsubmit = async (e) => {
+            e.preventDefault();
+            const res = await req('/api/login', 'POST', {
+                username: document.getElementById('username').value,
+                password: document.getElementById('password').value
+            });
+            if(res.error) alert(res.error);
+            else window.location.href = res.role === 'admin' ? 'admin.html' : 'dashboard.html';
+        };
+    </script>
+</body>
+</html>
