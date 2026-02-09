@@ -2,82 +2,112 @@
 <html lang="fr">
 <head>
     <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Gianni Navigator | Dashboard</title>
     <style>
-        :root { --bg: #0f0f1a; --card: #1a1a2e; --accent: #e94560; --text: #ffffff; }
-        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; padding: 20px; }
-        .container { max-width: 900px; margin: auto; }
-        .ami-card { background: var(--card); padding: 20px; border-radius: 15px; margin-bottom: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
-        .stat-row { margin: 15px 0; }
-        .bar-bg { background: #0f3460; height: 12px; border-radius: 6px; width: 100%; margin-top: 5px; overflow: hidden; }
-        .bar-fill { background: linear-gradient(90deg, #e94560, #ff2e63); height: 100%; transition: width 0.5s; }
-        .admin-panel { border-top: 2px dashed #444; margin-top: 40px; padding-top: 20px; }
-        button { background: var(--accent); border: none; color: white; padding: 10px 15px; border-radius: 5px; cursor: pointer; }
-        input, select { padding: 10px; border-radius: 5px; border: none; margin: 5px; }
+        :root { --bg: #0b0b14; --card: #161625; --accent: #ff2e63; --text: #eaeaea; --bar-bg: #1f1f33; }
+        body { background: var(--bg); color: var(--text); font-family: 'Inter', sans-serif; padding: 20px; line-height: 1.6; }
+        .container { max-width: 800px; margin: auto; }
+        
+        h1 { text-align: center; color: var(--accent); text-transform: uppercase; letter-spacing: 2px; }
+
+        .ami-card { background: var(--card); border-radius: 12px; padding: 20px; margin-bottom: 20px; border-left: 4px solid var(--accent); }
+        .ami-name { font-size: 1.4em; margin-bottom: 15px; display: flex; align-items: center; gap: 10px; }
+
+        .stat-block { margin-bottom: 12px; }
+        .stat-info { display: flex; justify-content: space-between; font-size: 0.9em; margin-bottom: 4px; }
+        .bar-container { background: var(--bar-bg); height: 10px; border-radius: 5px; overflow: hidden; }
+        .bar-fill { height: 100%; background: linear-gradient(90deg, #ff2e63, #ff6b6b); transition: width 0.8s cubic-bezier(0.17, 0.67, 0.83, 0.67); }
+
+        .admin-box { background: #1a1a2e; border: 1px solid #333; padding: 20px; border-radius: 12px; margin-top: 40px; }
+        .admin-box h3 { margin-top: 0; color: #08d9d6; }
+        .form-group { display: flex; flex-wrap: wrap; gap: 10px; }
+        
+        input, select, button { padding: 12px; border-radius: 6px; border: none; font-size: 14px; }
+        input, select { background: #252545; color: white; flex: 1; min-width: 150px; }
+        button { background: var(--accent); color: white; font-weight: bold; cursor: pointer; transition: 0.2s; }
+        button:hover { opacity: 0.8; transform: translateY(-2px); }
     </style>
 </head>
 <body>
 
 <div class="container">
-    <h1>📊 Jauge Relationnelle</h1>
-    <div id="display-area"></div>
+    <h1>📊 Système Gianni Navigator</h1>
+    
+    <div id="app"></div>
 
-    <div class="admin-panel">
-        <h3>⚙️ Administration</h3>
-        <input type="text" id="admin-ami" placeholder="Nom de l'ami">
-        <select id="admin-stat">
-            <option value="Réputation">Réputation</option>
-            <option value="Bonté">Bonté</option>
-            <option value="Loyauté">Loyauté</option>
-            <option value="Humour">Humour</option>
-            <option value="Soutien">Soutien</option>
-            <option value="Fiabilité">Fiabilité</option>
-        </select>
-        <input type="number" id="admin-val" placeholder="+/- %">
-        <button onclick="updateStat()">Appliquer</button>
+    <div class="admin-box">
+        <h3>⚙️ Panneau de Contrôle</h3>
+        <div class="form-group">
+            <input type="text" id="target-name" placeholder="Nom de l'ami (ex: Alex)">
+            <select id="target-stat">
+                <option value="Réputation">Réputation 🌟</option>
+                <option value="Bonté">Bonté ❤️</option>
+                <option value="Loyauté">Loyauté 🛡️</option>
+                <option value="Humour">Humour 😂</option>
+                <option value="Soutien">Soutien 🤝</option>
+                <option value="Fiabilité">Fiabilité ✅</option>
+            </select>
+            <input type="number" id="target-change" placeholder="+/- % (ex: 5)">
+            <button onclick="sendUpdate()">Appliquer</button>
+        </div>
     </div>
 </div>
 
 <script>
-    // REMPLACE PAR TON IP BOT-HOSTING (Ex: http://123.45.67.89:8080)
+    // TON ADRESSE SERVEUR
     const API_URL = "http://fi6.bot-hosting.net:21443";
 
-    async function loadStats() {
+    async function refreshData() {
         try {
-            const res = await fetch(`${API_URL}/stats`);
-            const data = await res.json();
-            const area = document.getElementById('display-area');
-            area.innerHTML = "";
+            const response = await fetch(`${API_URL}/stats`);
+            const stats = await response.json();
+            const app = document.getElementById('app');
+            app.innerHTML = "";
 
-            for (const [ami, stats] of Object.entries(data)) {
-                let html = `<div class="ami-card"><h2>👤 ${ami}</h2>`;
-                for (const [sName, sVal] of Object.entries(stats)) {
-                    html += `<div class="stat-row">
-                                <strong>${sName} : ${sVal}%</strong>
-                                <div class="bar-bg"><div class="bar-fill" style="width:${sVal}%"></div></div>
-                             </div>`;
-                }
-                html += `</div>`;
-                area.innerHTML += html;
+            if (Object.keys(stats).length === 0) {
+                app.innerHTML = "<p style='text-align:center; opacity:0.5;'>Aucune donnée. Ajoutez un ami ci-dessous !</p>";
+                return;
             }
-        } catch (e) { console.error("Erreur de connexion au serveur."); }
+
+            for (const [name, data] of Object.entries(stats)) {
+                let card = `<div class="ami-card"><div class="ami-name">👤 ${name}</div>`;
+                for (const [sName, sVal] of Object.entries(data)) {
+                    card += `
+                        <div class="stat-block">
+                            <div class="stat-info"><span>${sName}</span><span>${sVal}%</span></div>
+                            <div class="bar-container"><div class="bar-fill" style="width: ${sVal}%"></div></div>
+                        </div>`;
+                }
+                card += `</div>`;
+                app.innerHTML += card;
+            }
+        } catch (err) {
+            console.error("Erreur serveur :", err);
+        }
     }
 
-    async function updateStat() {
-        const ami = document.getElementById('admin-ami').value;
-        const stat = document.getElementById('admin-stat').value;
-        const change = document.getElementById('admin-val').value;
+    async function sendUpdate() {
+        const name = document.getElementById('target-name').value;
+        const stat = document.getElementById('target-stat').value;
+        const val = document.getElementById('target-change').value;
+
+        if (!name || !val) return alert("Remplis tous les champs !");
 
         await fetch(`${API_URL}/update`, {
             method: 'POST',
             headers: {'Content-Type': 'application/json'},
-            body: JSON.stringify({ami_name: ami, stat_name: stat, change: parseInt(change)})
+            body: JSON.stringify({ami_name: name, stat_name: stat, change: parseInt(val)})
         });
-        loadStats();
+        
+        document.getElementById('target-change').value = ""; // Reset champ
+        refreshData();
     }
 
-    loadStats();
-    setInterval(loadStats, 10000); // Refresh auto
+    // Chargement initial et rafraîchissement auto toutes les 10 sec
+    refreshData();
+    setInterval(refreshData, 10000);
 </script>
+
 </body>
 </html>
