@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="fr">
+<head>
+    <meta charset="UTF-8">
+    <title>Gianni Navigator | Dashboard</title>
+    <style>
+        :root { --bg: #0f0f1a; --card: #1a1a2e; --accent: #e94560; --text: #ffffff; }
+        body { background: var(--bg); color: var(--text); font-family: 'Segoe UI', sans-serif; padding: 20px; }
+        .container { max-width: 900px; margin: auto; }
+        .ami-card { background: var(--card); padding: 20px; border-radius: 15px; margin-bottom: 25px; box-shadow: 0 5px 15px rgba(0,0,0,0.3); }
+        .stat-row { margin: 15px 0; }
+        .bar-bg { background: #0f3460; height: 12px; border-radius: 6px; width: 100%; margin-top: 5px; overflow: hidden; }
+        .bar-fill { background: linear-gradient(90deg, #e94560, #ff2e63); height: 100%; transition: width 0.5s; }
+        .admin-panel { border-top: 2px dashed #444; margin-top: 40px; padding-top: 20px; }
+        button { background: var(--accent); border: none; color: white; padding: 10px 15px; border-radius: 5px; cursor: pointer; }
+        input, select { padding: 10px; border-radius: 5px; border: none; margin: 5px; }
+    </style>
+</head>
+<body>
+
+<div class="container">
+    <h1>📊 Jauge Relationnelle</h1>
+    <div id="display-area"></div>
+
+    <div class="admin-panel">
+        <h3>⚙️ Administration</h3>
+        <input type="text" id="admin-ami" placeholder="Nom de l'ami">
+        <select id="admin-stat">
+            <option value="Réputation">Réputation</option>
+            <option value="Bonté">Bonté</option>
+            <option value="Loyauté">Loyauté</option>
+            <option value="Humour">Humour</option>
+            <option value="Soutien">Soutien</option>
+            <option value="Fiabilité">Fiabilité</option>
+        </select>
+        <input type="number" id="admin-val" placeholder="+/- %">
+        <button onclick="updateStat()">Appliquer</button>
+    </div>
+</div>
+
+<script>
+    // REMPLACE PAR TON IP BOT-HOSTING (Ex: http://123.45.67.89:8080)
+    const API_URL = "http://TON_IP_ICI:8080";
+
+    async function loadStats() {
+        try {
+            const res = await fetch(`${API_URL}/stats`);
+            const data = await res.json();
+            const area = document.getElementById('display-area');
+            area.innerHTML = "";
+
+            for (const [ami, stats] of Object.entries(data)) {
+                let html = `<div class="ami-card"><h2>👤 ${ami}</h2>`;
+                for (const [sName, sVal] of Object.entries(stats)) {
+                    html += `<div class="stat-row">
+                                <strong>${sName} : ${sVal}%</strong>
+                                <div class="bar-bg"><div class="bar-fill" style="width:${sVal}%"></div></div>
+                             </div>`;
+                }
+                html += `</div>`;
+                area.innerHTML += html;
+            }
+        } catch (e) { console.error("Erreur de connexion au serveur."); }
+    }
+
+    async function updateStat() {
+        const ami = document.getElementById('admin-ami').value;
+        const stat = document.getElementById('admin-stat').value;
+        const change = document.getElementById('admin-val').value;
+
+        await fetch(`${API_URL}/update`, {
+            method: 'POST',
+            headers: {'Content-Type': 'application/json'},
+            body: JSON.stringify({ami_name: ami, stat_name: stat, change: parseInt(change)})
+        });
+        loadStats();
+    }
+
+    loadStats();
+    setInterval(loadStats, 10000); // Refresh auto
+</script>
+</body>
+</html>
